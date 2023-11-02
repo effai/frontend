@@ -29,7 +29,7 @@ const Post: React.FC<PostProps> = ({post}) => {
   const {author, content, created_at: createdAt, emoji, commentsCount, edited} = post;
   const {isAuthenticated, user} = useAuth();
   const {refetch} = usePosts();
-
+  
   const [comments, setComments] = useState<CommentsProps | undefined>([]);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
@@ -110,7 +110,7 @@ const Post: React.FC<PostProps> = ({post}) => {
         className="bg-message-container flex justify-start p-5 gap-x-5 items-center grid-rows-1 h-24 w-24 min-w-full min-h-[6em] rounded-md bg-gray-900">
         <div
           className="bg-container flex items-center justify-center w-12 h-12   rounded-full">
-          {emoji ? <Emoji unified={emoji} size={24}/> : null}
+          {emoji ? <Emoji lazyLoad unified={emoji} size={24}/> : null}
         
         </div>
         <div className="col-start-2 text-gray-500 text-lg">{content}</div>
