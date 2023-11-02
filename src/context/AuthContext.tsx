@@ -4,6 +4,7 @@ import axiosClient from '@/utils/axios';
 import { toast } from 'react-toastify';
 
 export interface UserData {
+  uuid: string;
   username: string;
   password: string;
   email?: string;
@@ -31,18 +32,36 @@ export const AuthContext = createContext<AuthContextProps>({
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [cookies, setCookie, removeCookie] = useCookies();
-  const [user, setUser] = useState<UserData | undefined>();
+  const [cookies, setCookie, removeCookie] = useCookies(['access_token']);
+  const [user, setUser] = useState<UserData>();
   
   useEffect(() => {
-    const accessToken = localStorage.getItem('access_token');
-    if (accessToken) {
-      setIsAuthenticated(true);
-    } else {
-      setUser(undefined);
-      setIsAuthenticated(false);
+    if (cookies.access_token) {
+      const fetchUserData = async () => {
+        try {
+          const response = await axiosClient.get('/get-user-data', {
+            headers: {
+              Authorization: `Bearer ${cookies.access_token}`
+            }
+          });
+          setUser(response.data);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          setUser(undefined);
+          setIsAuthenticated(false);
+        }
+      };
+      
+      if (cookies.access_token) {
+        fetchUserData();
+      } else {
+        setUser(undefined);
+        setIsAuthenticated(false);
+      }
     }
-  }, []);
+  }, [cookies.access_token]);
+  
   
   const handleAuthentication = async (data: UserData,
     endpoint: string) => {
@@ -58,9 +77,8 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
       }
       const response = await axiosClient.post(`/${endpoint}`, formData);
       if (response.status === 200) {
-        const {access_token} = response.data;
-        setCookie('access_token', access_token);
-        localStorage.setItem('access_token', access_token);
+        const {token} = response.data;
+        setCookie('access_token', token);
         setIsAuthenticated(true);
         setUser(data);
       }
@@ -75,10 +93,9 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
   
   const logout = () => {
     removeCookie('access_token');
-    localStorage.removeItem('access_token');
     setIsAuthenticated(false);
     setUser(undefined);
-    toast.info('You are logged out! Bye =('); // Show logout toast message
+    toast.info('You are logged out! Bye =(');
   };
   
   return (

@@ -1,59 +1,73 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Post from '../components/Post';
 import axiosClient from '@/utils/axios';
 import { useAuth } from '@/context/AuthContext';
 
 import EmojiPicker, { Emoji, EmojiClickData } from 'emoji-picker-react';
+import InputPopover from '@/components/InputPopover';
+import { usePosts } from '@/context/PostsContext';
+
+type Post = {
+  id: number;
+  uuid: string;
+  created_at: number,
+  author: {
+    email: string;
+    username: string;
+    avatar: string;
+    uuid: string;
+  };
+  authorAvatar: string;
+  content: string;
+  emoji: string;
+  time: string;
+  commentsCount: number;
+  edited: boolean;
+}
+export type PostProps = {
+  post: Post
+}
 
 const Posts: React.FC = () => {
   
   const {isAuthenticated, user} = useAuth();
   const [postData, setPostData] = useState({
+    uuid: '',
     content: '',
-    author: false,
+    username: '',
     emoji: '1f4ac',
-    anon: false
+    is_anon: false
   })
-  const [posts, setPosts] = useState([]);
-  const [postAnonymous, setPostAnonymous] = useState(false);
-  const [chosenEmoji, setChosenEmoji] = useState<string>('1f4ac');
+  const {posts, refetch} = usePosts();
   const [showPicker, setShowPicker] = useState(false);
   
   const handleEmojiClick = (emoji: EmojiClickData) => {
     setPostData({...postData, emoji: emoji.unified})
     setShowPicker(false);
   };
-  
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-  
-  const fetchPosts = async () => {
-    try {
-      const response = await axiosClient.get('/posts');
-      console.log(response)
-      setPosts(response.data.posts);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    }
-  };
-  
+  console.log(posts)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (postData.content) {
+    if (postData.content && isAuthenticated) {
       try {
-        const data = postAnonymous || !isAuthenticated
-          ? postData
+        const data = postData.is_anon || !isAuthenticated
+          ? {...postData, uuid: user?.uuid}
           : {...postData, username: user?.username};
         await axiosClient.post('/posts', data);
-        setPostData({anon: false, author: false, content: '', emoji: ''})
-        fetchPosts();
+        setPostData({
+          uuid: '',
+          content: '',
+          username: '',
+          emoji: '1f4ac',
+          is_anon: false
+        })
+        refetch()
       } catch (error) {
         console.error('Error creating post:', error);
       }
     }
   };
-  console.log(posts)
+  
   return (
     <div className="w-[48rem] mt-10 space-y-4 mx-auto flex flex-col">
       <div className="mb-5">
@@ -71,20 +85,21 @@ const Posts: React.FC = () => {
             className="bg-message-container flex justify-start p-5 gap-x-5 items-center grid-rows-1 h-24 w-24 min-w-full min-h-[6em] rounded-md bg-gray-900">
             <div
               className="bg-container cursor-pointer flex items-center justify-center relative w-12 h-12 overflow-hidden bg-gray-100 rounded-full"
-              onClick={() => setShowPicker(!showPicker)}>
-              {postData.emoji ? <Emoji unified={postData.emoji } size={24}/> : null}
-            
+              onClick={() => isAuthenticated && setShowPicker(!showPicker)}>
+              {postData.emoji ? <Emoji unified={postData.emoji} size={24}/> : null}
             </div>
-            {showPicker && (
-              <EmojiPicker onEmojiClick={handleEmojiClick}/>
-            )}
             
-            <input
-              className="bg-transparent text-gray-300 text-md block p-2.5 focus:outline-none"
-              placeholder="How are you feeling today?"
-              value={postData.content}
-              onChange={(e) => setPostData({...postData, content: e.target.value})}
-            />
+            <InputPopover className="flex-1" isAuthenticated={isAuthenticated}
+                          popoverContent={'You must register to leave a message'}>
+              <input
+                className="bg-transparent text-gray-300 border-b text-md block p-2.5 focus:outline-none w-full"
+                placeholder="How are you feeling today?"
+                id="content"
+                disabled={!isAuthenticated}
+                value={postData.content}
+                onChange={(e) => setPostData({...postData, content: e.target.value})}
+              />
+            </InputPopover>
           </div>
           <div className={`flex ${isAuthenticated ? 'justify-between' : 'justify-end'} gap-4 mt-4 pl-4`}>
             {isAuthenticated &&
@@ -93,19 +108,26 @@ const Posts: React.FC = () => {
                   type="checkbox"
                   name="anonymous"
                   id="anonymous"
-                  checked={postAnonymous}
-                  onChange={(e) => setPostData({...postData, anon: e.target.checked})}
+                  checked={postData.is_anon}
+                  onChange={(e) => setPostData({...postData, is_anon: e.target.checked})}
                 />
                 Post anonymously
               </label>
             }
             <button type="submit"
-                    className="bg-blue-500 text-white text-lg font-medium rounded-md text-md px-12 py-2.5 text-center">Post
+                    disabled={!isAuthenticated}
+                    className="bg-blue-500 text-white text-lg font-medium rounded-md text-md px-12 py-2.5 text-center">
+              Post
             </button>
           </div>
         </form>
+        {showPicker && (
+          <div className="absolute">
+            <EmojiPicker lazyLoadEmojis onEmojiClick={handleEmojiClick}/>
+          </div>
+        )}
       </div>
-      {posts && posts.map((post) => <Post post={post} key={post}/>)}
+      {posts && posts.map((post: Post) => <Post post={post} key={post.uuid}/>)}
     </div>
   );
 };

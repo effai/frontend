@@ -11,6 +11,7 @@ const Register: React.FC = () => {
   const {register} = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState<UserData>({
+    uuid: '',
     username: '',
     password: '',
     email: '',
@@ -21,7 +22,6 @@ const Register: React.FC = () => {
     e.preventDefault();
     try {
       await register(formData);
-      console.log(formData)
       router.push('/login');
     } catch (err) {
       const axiosErr = err as AxiosError;
@@ -32,6 +32,7 @@ const Register: React.FC = () => {
       }
     }
   };
+  
   return (
     <div className="flex flex-col space-y-12 justify-center px-6 py-8 h-[80%] lg:py-0">
       <div className="w-full shadow border-2 border-gray-500 mx-auto rounded-lg mt-0 sm:max-w-md xl:p-0">
