@@ -49,9 +49,10 @@ const Post: React.FC<PostProps> = ({post}) => {
   
   const handleAddComment = async () => {
     try {
-      await axiosClient.post('/comments', {content: newComment, post_id: post.id});
+      await axiosClient.post('/comments', {content: newComment, post_id: post.id, user_uuid: user?.uuid});
       setNewComment('');
-      fetchComments();
+      refetch();
+      fetchComments()
     } catch (error) {
       console.error('Error adding comment:', error);
     }
