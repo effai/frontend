@@ -50,9 +50,10 @@ const Posts: React.FC = () => {
     e.preventDefault();
     if (postData.content && isAuthenticated) {
       try {
-        const data = postData.is_anon || !isAuthenticated
-          ? {...postData, uuid: user?.uuid}
-          : {...postData, username: user?.username};
+        const data = {
+          ...postData,
+          user_uuid: user?.uuid
+        };
         await axiosClient.post('/posts', data);
         setPostData({
           uuid: '',
@@ -60,14 +61,14 @@ const Posts: React.FC = () => {
           username: '',
           emoji: '1f4ac',
           is_anon: false
-        })
-        refetch()
+        });
+        refetch();
       } catch (error) {
         console.error('Error creating post:', error);
       }
     }
   };
-  
+  console.log(isAuthenticated)
   return (
     <div className="w-[48rem] mt-10 space-y-4 mx-auto flex flex-col">
       <div className="mb-5">
@@ -83,11 +84,12 @@ const Posts: React.FC = () => {
         <form action="#" onSubmit={handleSubmit}>
           <div
             className="bg-message-container flex justify-start p-5 gap-x-5 items-center grid-rows-1 h-24 w-24 min-w-full min-h-[6em] rounded-md bg-gray-900">
-            <div
+            <button
+              disabled={!isAuthenticated}
               className="bg-container cursor-pointer flex items-center justify-center relative w-12 h-12 overflow-hidden bg-gray-100 rounded-full"
               onClick={() => isAuthenticated && setShowPicker(!showPicker)}>
-              {postData.emoji ? <EmojiDynamic lazyLoad unified={postData.emoji} size={24}/> : null}
-            </div>
+              {postData.emoji && <EmojiDynamic lazyLoad unified={postData.emoji} size={24}/> }
+            </button>
             
             <InputPopover className="flex-1" isAuthenticated={isAuthenticated}
                           popoverContent={'You must register to leave a message'}>
