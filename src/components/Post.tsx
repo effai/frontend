@@ -146,19 +146,20 @@ const Post: React.FC<PostProps> = ({post}) => {
               </button>
             </div>
           )}
-          <ul className="flex flex-col gap-4"> {comments.map(comment => (
-            <li key={comment.id}>
-              <div className="p-2 border border-gray-400 rounded-md font-basier">
-                <div className="flex gap-4">
-                  <img className=" w-12 h-12 rounded-full object-cover shadow"
-                       src={`data:image/jpeg;base64,${comment.author.avatar}`} alt=""/>
-                  <div className="flex flex-col justify-center">
-                    <div className="col-start-2 text-gray-500 text-lg">{comment.content}</div>
+          <ul className="flex flex-col gap-4">
+            {comments.map(comment => (
+              <li key={comment.id}>
+                <div className="p-2 border border-gray-400 rounded-md font-basier">
+                  <div className="flex gap-4">
+                    <img className=" w-12 h-12 rounded-full object-cover shadow"
+                         src={`data:image/jpeg;base64,${comment.author.avatar}`} alt=""/>
+                    <div className="flex flex-col justify-center">
+                      <div className="col-start-2 text-gray-500 text-lg">{comment.content}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </li>
-          ))}</ul>
+              </li>
+            ))}</ul>
         </div>
       )}
     </div>
