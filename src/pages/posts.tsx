@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import Post from '../components/Post';
 import axiosClient from '@/utils/axios';
 import { useAuth } from '@/context/AuthContext';
-
 import InputPopover from '@/components/InputPopover';
 import { usePosts } from '@/context/PostsContext';
-import type { EmojiClickData } from 'emoji-picker-react';
-import { EmojiDynamic, EmojiPickerDynamic } from '@/utils/EmojiDynamic';
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 
 type Post = {
   id: number;
@@ -29,23 +28,32 @@ export type PostProps = {
   post: Post
 }
 
+type EmojiProps = {
+  id: string,
+  keywords: [],
+  name: string,
+  native: string,
+  shortcodes: string,
+  unified: string,
+}
+
 const Posts: React.FC = () => {
   const {isAuthenticated, user} = useAuth();
   const [postData, setPostData] = useState({
     uuid: '',
     content: '',
     username: '',
-    emoji: '1f4ac',
+    emoji: '💬',
     is_anon: false
   })
   const {posts, refetch} = usePosts();
   const [showPicker, setShowPicker] = useState(false);
   
-  const handleEmojiClick = (emoji: EmojiClickData) => {
-    setPostData({...postData, emoji: emoji.unified})
+  const handleEmojiClick = (emoji: EmojiProps) => {
+    setPostData({...postData, emoji: emoji.native})
     setShowPicker(false);
   };
-  console.log(posts)
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (postData.content && isAuthenticated) {
@@ -59,7 +67,7 @@ const Posts: React.FC = () => {
           uuid: '',
           content: '',
           username: '',
-          emoji: '1f4ac',
+          emoji: '💬',
           is_anon: false
         });
         refetch();
@@ -68,7 +76,7 @@ const Posts: React.FC = () => {
       }
     }
   };
-  console.log(isAuthenticated)
+  
   return (
     <div className="w-[48rem] mt-10 space-y-4 mx-auto flex flex-col">
       <div className="mb-5">
@@ -81,14 +89,15 @@ const Posts: React.FC = () => {
       <div
         className="w-full post-container border-2 border-gray-800 p-5 space-y-4 rounded-md font-basier grid bg-container">
         <div className="text-gray-300 text-xl">Create post</div>
-        <form action="#" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <div
             className="bg-message-container flex justify-start p-5 gap-x-5 items-center grid-rows-1 h-24 w-24 min-w-full min-h-[6em] rounded-md bg-gray-900">
             <button
+              type="button"
               disabled={!isAuthenticated}
               className="bg-container cursor-pointer flex items-center justify-center relative w-12 h-12 overflow-hidden bg-gray-100 rounded-full"
               onClick={() => isAuthenticated && setShowPicker(!showPicker)}>
-              {postData.emoji && <EmojiDynamic lazyLoad unified={postData.emoji} size={24}/> }
+              {postData.emoji}
             </button>
             
             <InputPopover className="flex-1" isAuthenticated={isAuthenticated}
@@ -97,6 +106,7 @@ const Posts: React.FC = () => {
                 className="bg-transparent text-gray-300 border-b text-md block p-2.5 focus:outline-none w-full"
                 placeholder="How are you feeling today?"
                 id="content"
+                required
                 disabled={!isAuthenticated}
                 value={postData.content}
                 onChange={(e) => setPostData({...postData, content: e.target.value})}
@@ -123,9 +133,10 @@ const Posts: React.FC = () => {
             </button>
           </div>
         </form>
+        
         {showPicker && (
           <div className="absolute">
-            <EmojiPickerDynamic lazyLoadEmojis onEmojiClick={handleEmojiClick}/>
+            <Picker data={data} previewPosition={'none'} onEmojiSelect={handleEmojiClick}/>
           </div>
         )}
       </div>

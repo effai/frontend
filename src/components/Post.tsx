@@ -3,7 +3,6 @@ import CommentIcon from '../icons/CommentIcon';
 import { timeStatus } from '@/utils/times';
 import KebabMenu from '@/components/KebabMenu';
 import axiosClient from '@/utils/axios';
-import { Emoji } from 'emoji-picker-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-toastify';
 import { PostProps } from '@/pages/posts';
@@ -111,8 +110,7 @@ const Post: React.FC<PostProps> = ({post}) => {
         className="bg-message-container flex justify-start p-5 gap-x-5 items-center grid-rows-1 h-24 w-24 min-w-full min-h-[6em] rounded-md bg-gray-900">
         <div
           className="bg-container flex items-center justify-center w-12 h-12   rounded-full">
-          {emoji ? <Emoji lazyLoad unified={emoji} size={24}/> : null}
-        
+          {emoji}
         </div>
         <div className="col-start-2 text-gray-500 text-lg">{content}</div>
       
