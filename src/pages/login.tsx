@@ -1,20 +1,26 @@
 import * as React from 'react';
 import LogoIcon from '../icons/LogoIcon';
 import ShowIcon from '../icons/ShowIcon';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, UserData } from '@/context/AuthContext';
 import { useState } from 'react';
 import Link from 'next/link';
-import { router } from 'next/client';
+import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 import { AxiosError } from '@/utils/axios';
 
 
 const Login: React.FC = () => {
-  
+  const router = useRouter();
   const {login} = useAuth();
-  const [formData, setFormData] = useState({username: '', password: ''});
+  const [formData, setFormData] = useState<UserData>({
+    avatar: undefined,
+    email: '',
+    password: '',
+    username: '',
+    uuid: ''
+  });
   
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>)  => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await login(formData);
@@ -45,7 +51,7 @@ const Login: React.FC = () => {
           <form className="space-y-4 md:space-y-6" action="#" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-300">
-                Email or Username
+                Username
               </label>
               <input type="test" name="email" id="email"
                      className="bg-transparent border border-gray-600  text-gray-300 text-md rounded-lg block w-full p-2.5 "

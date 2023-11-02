@@ -6,7 +6,7 @@ import ThreeDotsIcon from '@/icons/ThreeDotsIcon';
 
 const KebabMenu: React.FC<{
   onEdit?: () => void;
-  onDelete?: () => void;
+  onDelete: () => void;
 }> = ({ onEdit, onDelete }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   
